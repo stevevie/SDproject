@@ -235,3 +235,14 @@ java.lang.NullPointerException
 
 !ENTRY org.eclipse.epp.logging.aeri.ui 2 6 2016-10-21 18:26:22.908
 !MESSAGE Failed to determine ETAG for remote problems database. Stopping update. Version: 1.0.0.v20150617-0732
+
+!ENTRY org.eclipse.ui.ide 4 4 2016-10-21 18:49:16.996
+!MESSAGE Problems saving workspace
+
+!ENTRY org.eclipse.ui.ide 2 1 2016-10-21 18:49:16.996
+!MESSAGE Problems occurred while trying to save the state of the workbench.
+!SUBENTRY 1 org.eclipse.core.resources 2 234 2016-10-21 18:49:16.996
+!MESSAGE The project description file (.project) for 'Proj' was missing.  This file contains important information about the project.  A new project description file has been created, but some information about the project may have been lost.
+
+!ENTRY org.eclipse.core.resources 2 10035 2016-10-21 18:49:18.147
+!MESSAGE The workspace will exit with unsaved changes in this session.
