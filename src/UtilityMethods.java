@@ -18,6 +18,7 @@ public class UtilityMethods {
 	private static Statement statement = null;
 	private static ResultSet result = null;
 	private static ResultSetMetaData meta1; 
+	private Scanner scanner;
 	Cliente cliente;
 	
 	public UtilityMethods(Cliente cliente,DbConnectionPool pool){
@@ -54,42 +55,35 @@ public class UtilityMethods {
         //code = in.next();
         //int cont = 0; // will increment when 1 result found
 		int countRows=0; 
-		try{
-		if(searchingString.length()>=10 && searchingString.length()<=13){	
+		
+			
 	
 			try {
-				statement=connection.createStatement();
-				result=statement.executeQuery("");//statements which does the select on db thanks to searchingstring
-		        String countString=result.getString(0);
-		        if(Integer.parseInt(countString)!=0){	
-		        	meta1=result.getMetaData();
-		        	int numberOfColumns	=	meta1.getColumnCount();	
-		        		for	(int	i	=	1;	i	<=	numberOfColumns;	i++)	{		
-		        			String columnName	=	meta1.getColumnLabel(i);			
-		        		}	
+				if(searchingString.length()>=10 && searchingString.length()<=13){//Questo è un metodo che dovrebbe essere interno a parte che chiama l'eccezione con throws ExeptionLenght
+					statement=connection.createStatement();
+					result=statement.executeQuery("SELECT ");//statements which does the select on db thanks to searchingstring
+					String countString=result.getString(0);
+					if(Integer.parseInt(countString)!=0){	
+						meta1=result.getMetaData();
+						int numberOfColumns	=	meta1.getColumnCount();	
+		        			for	(int	i	=	1;	i	<=	numberOfColumns;	i++)	{		
+		        				String columnName	=	meta1.getColumnLabel(i);
+		        			}	
 				
-		        		while(result.next()){	//print all che table results, we have to display only what we need	
-		        			for	(int	i=1;i<=numberOfColumns;	i++)	{		
-		        				String columnValue	=result.getString(i);		
-		        				System.out.print(columnValue);		
-		        			}		
-		        		}
-		        }else{
-		        	throw new ExeptionLenght()
-		        }
-		        
-			}catch (SQLException e) {
+		        			
+		        			while(result.next()){	//print all che table results, we have to display only what we need	
+		        				for	(int	i=1;i<=numberOfColumns;	i++)	{		
+		        					String columnValue	=result.getString(i);		
+		        					System.out.print(columnValue);		
+		        				}		
+		        			}
+						}
+					}
+		       }catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+		       }
 	
-			   
-	
-		//}catch{
-			
-	//	}finally{
-		  
-		//}
 	} 		
 		
         // 2) check if code is valid (need have 10 or 13 digits)
@@ -105,8 +99,7 @@ public class UtilityMethods {
         		// items_count: 2
         		// items_0_id: 101, items_0_code: 9780451524935, items_0_title: 1984
         		// items_1_id: 103, items_1_code: 9780451524935, items_1_title: 1984 usado
-		
-	}
+	
 	//////////////////////////////////////////////////////////////////////////
 	// TASK 3 (by: Guido): detail_auction
 	public static void  detail_auction(){
@@ -151,65 +144,77 @@ public class UtilityMethods {
 	}	
 	//////////////////////////////////////////////////////////////////////////
 	// TASK 5 (By: Guido): bid 
-	public static void bid(Bid bid){
+	public static void bid(Bid bid) throws ExeptionBidNotHigherEnough{//The control on the variables has to be done when an user begin insert the data
 		try{
 			statement=connection.createStatement();
-			statement.executeQuery("INSERT INTO Bid VALUES ("+bid.getCliente_id()+","+bid.getAuct_id()+","+bid.getPrice());//search query by the id of the user
+			
 			result=statement.executeQuery("SELECT MAX(ActualPrice_auc) FROM nometabella WHERE idAuction="+bid.getAuct_id());
 			if(Integer.parseInt(result.getString(0))<bid.getPrice()){
-				statement.execute("UPDATE Auctions SET ActualPrice_auc"+bid.getPrice()+"WHERE idAuction="+bid.getAuct_id());
+				statement.execute("UPDATE Auctions SET ActualPrice_auc'"+bid.getPrice()+"' WHERE idAuction='"+bid.getAuct_id()+"'");
+				statement.executeQuery("INSERT INTO Bid VALUES ("+bid.getCliente_id()+","+bid.getAuct_id()+","+bid.getPrice());//search query by the id of the user
+				System.out.println("type");
 			}else{
-				//rho
+				
 			}
 		}catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	//////////////////////////////////////////////////////////////////////////
 	// TASK 6 (By: Guido): message
-	public static void message(Message msg, String text){
-		statement=connection.createStatement();
-		msg.setText(text);
+	public void message(Message msg, String text) throws SQLException{
+		
+		msg.setText(scanner.nextLine());
+		statement.executeQuery("INSERT INTO Messages (Text_msg,Status,User_sender,User_reciver)"+
+												"VALUES ('"+msg.getText()+"',1,0,0)");
+		
 		//try{
-		   statement.executeQuery("");
+		   result=statement.executeQuery("SELECT idAuction,Code,Title_auc FROM Auction");
+		   
 		//}catch{
 			
 		//}
 	}
 	//////////////////////////////////////////////////////////////////////////
 	// TASK 7 (By: Guido): detail_auction
-	public static void online_users(){
-		  
+	public static void online_users() throws SQLException
+	{	  
 			statement=connection.createStatement();  
-			result=statement.executeQuery("");//statements which selects all users with status==1
-			String countString=result.getString(0);
+			result=statement.executeQuery("SELECT COUNT(1) AS RowNumber	FROM Users WHERE Status=1");
+			try {
+				if((Integer.parseInt(result.getString("RowNumber")))>0){
+					String response="type online_users, user_count="+ result.getString("RowNumber")+", ";
+					result=statement.executeQuery("SELECT Username FROM Users WHERE Status=1");//statements which selects all users with status==1
+		        	meta1=result.getMetaData();	
+				    int numberOfColumns=meta1.getColumnCount();
+		        		//it always works even if we have one column
+		        		while(result.next()){	//print all che table results, we have to display only what we need	
+		        			for	(int	i=1;i<=numberOfColumns;	i++)	{	
+		        				response+=""+result.getString(i)+" ,";
+		        				
+		        			}
+		        		}
+		        		System.out.println(response);
+				} 
+			}catch (NumberFormatException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
-			//try{	
-			        	meta1=result.getMetaData();
-			        	int numberOfColumns	=	meta1.getColumnCount();	
-					for	(int	i	=	1;	i	<=	numberOfColumns;	i++)	{		
-							String columnName	=	meta1.getColumnLabel(i);			
-						}	
-					
-					while(result.next()){	//print all che table results, we have to display only what we need	
-						for	(int	i=1;i<=numberOfColumns;	i++)	{		
-						String columnValue	=result.getString(i);		
-						System.out.print("item"columnValue);		
-						}		
-					}		
+			
 		//	}catch{
 				
 		//	}finally{
 				
 		//	}
-	}
+			}
+	
 	//////////////////////////////////////////////////////////////////////////
 
 	
 	//////////////////////////////////////////////////////////////////////////
 	// TASK 0a (By Alfredo)
-	 public static void registry(){
+	/* public void registry(){
 	      
 	      int ok = 0; // false (ok = 1 when true)
 	        Scanner in = new Scanner(System.in);
@@ -223,20 +228,25 @@ public class UtilityMethods {
 	        // if account created need print "ok: true"
 	        
 	        try {
-	    
 	        // Execute SQL query
-	          pedido = statement.executeQuery("select * from users");
+	          result = statement.executeQuery("select * from Users");
 	          
 	          // Process the result set
-	          while (pedido.next()) {
-	            
-	            String user = pedido.getString("username");
-	            String pass = pedido.getString("password");
-	            int s1 = 0;
-	            int s2 = 0;
+	        	meta1=result.getMetaData();
+	        	int numberOfColumns	=	meta1.getColumnCount();	
+			for	(int	i	=	1;	i	<=	numberOfColumns;	i++)	{		
+					String columnName	=	meta1.getColumnLabel(i);			
+				}	
+			
+			while(result.next()){	//print all che table results, we have to display only what we need	
+				for	(int	i=1;i<=numberOfColumns;	i++)	{		
+				String columnValue	=result.getString(i);		
+				System.out.print("item " +i +" "+ columnValue);		
+				}		
+			}
 	            //System.out.println(user + ", " + pass);
-	            
-	            
+	              result.getstri
+	            result.getString(columnIndex)
 	    
 	            if((user.equals("user1")) && (pass.equals("user1")){
 	              // ask another username: username already exists
@@ -262,7 +272,7 @@ public class UtilityMethods {
 	          }
 	       
 	    }
-    
+                                    Thebrechets*/
     //////////////////////////////////////////////////////////////////////////
     // TASK 0b (By Guido)
     public static void login(){
@@ -292,14 +302,38 @@ public class UtilityMethods {
         
     }
     
-    public static void login_types(){
+    public static void login_types(Cliente cliente){//create an object to store variables
     	Scanner in = new Scanner(System.in);
 
     	System.out.println("POSSIBLE TYPES: create_auction, search_auction, detail_auction, my_auctions, bid, message, online_users");
     	String type = "";
     	System.out.print("type: ");
         type = in.next();
-        Cliente cliente;
+        
+        
+        result=statement.executeQuery("SELECT *"+
+        							  "FROM Users"+
+        							  "INNER JOIN Messages"+
+        							  "ON Messages.User_sender=Users.idUser,"+
+        							  "WHERE Messages.Status=0 and Users.Username='"+cliente.getUsername()+"'");//statements which selects all users with status==1
+        if(result.getString("Username").equals("")){
+        	System.out.println("You don't have notifications");
+        }else{
+        	String response="type: notification_message, ";
+			//statements which selects all users with status==1
+        	meta1=result.getMetaData();	
+		    int numberOfColumns=meta1.getColumnCount();
+        		//it always works even if we have one column
+        		while(result.next()){	//print all che table results, we have to display only what we need	
+        			for	(int	i=1;i<=numberOfColumns;	i++)	{	
+        				response+="id:"+result.getString("idMessage")+", ";
+        				response+="user: "+result.getString("idUser")+", ";
+        				response+="text: "+result.getString("Test_msg");
+        				response+="\n";
+        			}
+        		}
+        		System.out.println(response);
+        }
         
         if(type.equals("create_auction")){
         	//System.out.println("entrou");
@@ -360,34 +394,6 @@ public class UtilityMethods {
         //conexao = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd", "root" , "abc");
 		statement = connection.createStatement();	
 	}
-	public static void main(String[] args) throws SQLException {
-	    
-	    
-	    try {
-	      
-	      db_connection();
-	      registry();
-	      
-	    
-	    }
-	    catch (Exception exc) {
-	      exc.printStackTrace();
-	    }
-	    
-	    /*
-	    finally {
-	      if (pedido != null) {
-	        pedido.close();
-	      }
-	      
-	      if (statement != null) {
-	        statement.close();
-	      }
-	      
-	      if (conexao != null) {
-	        conexao.close();
-	      }
-	    }*/
-	  }
+	
 }
     

@@ -16,6 +16,7 @@ import java.util.*;
 
 public class Cliente {
 	private int cliente_id;
+	private String username,password;
 	
     
     public static void cadastro(){
@@ -125,7 +126,9 @@ public class Cliente {
     public int getId(){
     	return cliente_id;
     }
-    
+    public String getUsername(){
+    	return username;
+    }
     public static void main(String[] args) {
         System.out.println("\tBem vindo ao iBei!");
         menu_principal();
