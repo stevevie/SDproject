@@ -1,0 +1,97 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
+USE `mydb` ;
+
+-- -----------------------------------------------------
+-- Table `mydb`.`auctions`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`auctions` (
+  `idAuctions` INT(11) NOT NULL,
+  `Title` VARCHAR(45) NULL DEFAULT NULL,
+  `Description_auc` VARCHAR(45) NULL DEFAULT NULL,
+  `Status_auc` TINYINT(1) NULL DEFAULT '0',
+  `Code_auc` VARCHAR(45) NULL DEFAULT NULL,
+  `Deadline_auc` DATETIME NULL DEFAULT NULL,
+  `Price_auc` DECIMAL(10,2) NULL DEFAULT NULL,
+  PRIMARY KEY (`idAuctions`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`users`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`users` (
+  `idUsers` INT(11) NOT NULL,
+  `Username` VARCHAR(45) NULL DEFAULT NULL,
+  `status` VARCHAR(45) CHARACTER SET 'utf8' NULL DEFAULT NULL,
+  `Password` TINYINT(1) NULL DEFAULT '0',
+  PRIMARY KEY (`idUsers`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`bids`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`bids` (
+  `Users_idUsers` INT(11) NOT NULL,
+  `Auctions_idAuctions` INT(11) NOT NULL,
+  PRIMARY KEY (`Users_idUsers`, `Auctions_idAuctions`),
+  INDEX `fk_Users_has_Auctions_Auctions1_idx` (`Auctions_idAuctions` ASC),
+  INDEX `fk_Users_has_Auctions_Users_idx` (`Users_idUsers` ASC),
+  CONSTRAINT `fk_Users_has_Auctions_Auctions1`
+    FOREIGN KEY (`Auctions_idAuctions`)
+    REFERENCES `mydb`.`auctions` (`idAuctions`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Users_has_Auctions_Users`
+    FOREIGN KEY (`Users_idUsers`)
+    REFERENCES `mydb`.`users` (`idUsers`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`messages`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`messages` (
+  `idMessages` INT(11) NOT NULL AUTO_INCREMENT,
+  `text_msg` VARCHAR(200) NULL DEFAULT NULL,
+  `Status` TINYINT(1) NULL DEFAULT '0',
+  `Users_sender` INT(11) NOT NULL,
+  `Users_reciver` INT(11) NOT NULL,
+  PRIMARY KEY (`idMessages`),
+  INDEX `fk_Messages_Users1_idx` (`Users_sender` ASC),
+  INDEX `fk_Messages_Users2_idx` (`Users_reciver` ASC),
+  CONSTRAINT `fk_Messages_Users1`
+    FOREIGN KEY (`Users_sender`)
+    REFERENCES `mydb`.`users` (`idUsers`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Messages_Users2`
+    FOREIGN KEY (`Users_reciver`)
+    REFERENCES `mydb`.`users` (`idUsers`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
