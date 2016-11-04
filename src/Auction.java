@@ -20,6 +20,11 @@ public class Auction {
 		}
 	  
 	  
+	public Auction() {
+		// TODO Auto-generated constructor stub
+	}
+
+
 	public int getAuction_id() {
 		return auction_id;
 	}

@@ -1,5 +1,4 @@
-// EDITED ON 22-10-2016
-// ALFREDO SOLDADINHO
+
 
 import java.sql.*;
 import java.sql.Date;
@@ -8,12 +7,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import javax.swing.*;
+
 import java.io.*;
 import java.net.*;
 import java.security.*;
 import java.util.*;
-
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.*;
 
 
@@ -21,17 +21,25 @@ public class UtilityMethods {
 	//This variable have to be static???? The connection and statemt of course. I've doubts on the others
 	//the instance variables have to be static
 	
-    private static Connection connection = null;
-	private static Statement statement = null;
-	private static ResultSet result = null;
-	private static ResultSet result2 = null;
-	private static ResultSetMetaData meta1; 
+    private  Connection connection;
+	private Statement statement ;
+	private  ResultSet result ;
+	private  ResultSet result2;
+	private  ResultSetMetaData meta1; 
+	private  Pattern p = null;        //The pattern.compile is the regexp
+	private  Matcher m = null; //This is the string that is going to be passes
+	private DbConnectionPool pool;
 	private Scanner scanner;
-	Cliente cliente;
+	private Cliente cliente;
 	
-	public UtilityMethods(Cliente cliente,DbConnectionPool pool){
-		this.cliente=cliente;
+	public UtilityMethods() throws SQLException{
+		this.cliente=new Cliente();
+		this.pool=new DbConnectionPool();
+		this.connection=pool.getConnection();
+		statement=null;
+		this.scanner=new Scanner(System.in);
 		try {
+			
 			connection=pool.getConnection();
 		} catch (SQLException e) {
 			//send exeption 
@@ -51,6 +59,10 @@ public class UtilityMethods {
 			result=statement.executeQuery("SELECT *"+
 										  "FROM Auctions"+
 										  "WHERE Auction.idAuction="+idAuc+";");
+		
+			meta1=result.getMetaData();
+			int numberOfColumns	=	meta1.getColumnCount();	
+			
 			while(result.next()){	//print all che table results, we have to display only what we need	
 				for	(int	i=1;i<=numberOfColumns;	i++){		
 					response+="id:"+result.getString("idAuction")+" ,";
@@ -100,7 +112,7 @@ public class UtilityMethods {
 	}
 	
 	
-	public static void showMyAuctions(Cliente client){
+	public void showMyAuctions(){
 		//Before this method we have to search the client id
 		//Our database don't let us search the id only with the username and pass
 		//than we have to provide a solution(How should we search the id of a client?)
@@ -112,8 +124,8 @@ public class UtilityMethods {
 				result=statement.executeQuery("SELECT COUNT(1) as RowNumber"+
 											  "FROM Auctions"+
 											  "INNER JOIN Bids"+
-											  "ON Auctions.idAuction=Bids.Auctions_idAuction"
-											  "WHERE Bids.Users_idUser="+client.getId+"and Auctions.Status=1;");
+											  "ON Auctions.idAuction=Bids.Auctions_idAuction"+
+											  "WHERE Bids.Users_idUser="+cliente.getClientId()+"and Auctions.Status=1;");
 			   
 				
 				if(result.getInt("RowNumber")!=0){
@@ -122,8 +134,8 @@ public class UtilityMethods {
 					result=statement.executeQuery("SELECT *"+
 												  "FROM Auctions"+
 												  "INNER JOIN Bids"+
-												  "ON Auctions.idAuction=Bids.Auctions_idAuction"
-												  "WHERE Bids.Users_idUser="+client.getId+"and Auctions.Status=1;");
+												  "ON Auctions.idAuction=Bids.Auctions_idAuction" +
+												  "WHERE Bids.Users_idUser="+cliente.getClientId()+"and Auctions.Status=1;");
 					
 					meta1=result.getMetaData();
 					int numberOfColumns	=	meta1.getColumnCount();	
@@ -144,6 +156,8 @@ public class UtilityMethods {
 	       }catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+	       }finally {
+			if (statement != null) { statement.close(); }
 	       }
 		
 		
@@ -152,7 +166,7 @@ public class UtilityMethods {
 
 	//////////////////////////////////////////////////////////////////////////
 	// TASK 2 (by: Guido): search_auction
-	public static void searchAuction(String searchingString) {
+	public void searchAuction(String searchingString) {
 		// need search auction by code with 10 or 13 digits only
 		
 		// 1) ask for the code
@@ -165,7 +179,10 @@ public class UtilityMethods {
         String response="type: my_auctions, ";
         
 			try {
-				if(searchingString.length()==10 || searchingString.length()==13){//Questo è un metodo che dovrebbe essere interno a parte che chiama l'eccezione con throws ExeptionLenght
+				 p=Pattern.compile("[a-zA-Z]");
+				 m=p.matcher(searchingString);
+				 
+				if((searchingString.length()==10 || searchingString.length()==13) && m.matches()){//Questo è un metodo che dovrebbe essere interno a parte che chiama l'eccezione con throws ExeptionLenght
 					statement=connection.createStatement();
 				
 					//statements which does the select on db thanks to searchingstring
@@ -198,6 +215,8 @@ public class UtilityMethods {
 		       }catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+		       }finally {
+		           if (statement != null) { statement.close(); }
 		       }
 	
 	} 		
@@ -206,7 +225,7 @@ public class UtilityMethods {
 		
 		// 3) check if the code is on table "auctions"
         
-        // 4) compute the number of examples found
+        // 4) compute the number of examples founde
         	// how many examples found?
 		
 		// 5) print results to the user
@@ -219,7 +238,7 @@ public class UtilityMethods {
 	
 	//////////////////////////////////////////////////////////////////////////
 	// TASK 3 (by: Guido): detail_auction
-	public void  detail_auction(){
+	public void  detailAuction(){
 		System.out.println("Insert the id you want to search:");
 		int searchId=scanner.nextInt();
 		String response="type: detail_auction, id:"+searchId+"\n";
@@ -272,38 +291,44 @@ public class UtilityMethods {
     	System.out.println(response);
 		}catch (SQLException e) {
 			e.printStackTrace();
-		}
+		}finally {
+	        if (statement != null) { statement.close(); }
+	    }
 	}
 	
 	
 	//////////////////////////////////////////////////////////////////////////
 	// TASK 4 (By: Guido): createAuction
-	public void createAuction(Cliente cliente){//insert auction into database
-		 int idCliente=cliente.getId();
-			//try{
+	public void createAuction(){//insert auction into database
+		 int idCliente=cliente.getClientId();
+		 Auction nova=new Auction();
+		
 		   System.out.println("insert price:");
-		   String price = scanner.nextLine();
-		   
+		   nova.setPrice(scanner.nextDouble());
+		
 		   System.out.println("insert title:");
-		   String title = scanner.nextLine();
+		   nova.setPrice(scanner.nextLine()); 
 		   
 		   System.out.println("insert description:");
-		   String description =scanner.nextLine();
+		   nova.setDescription(scanner.nextLine());
 		   
 		   System.out.println("insert code:");
-		   String code = scanner.nextLine();
-
+		   nova.setCode(scanner.nextLine());
+		   
 		   System.out.println("insert deadline:");
-		   String deadline = scanner.nextLine();
+		   nova.setDeadline();
 		   //check control on deadline
+		
 				try {
 					result=statement.executeQuery("INSERT INTO Auctions (Title, Description, Status, Code, Deadline, ActualPrice)"+
-												  "VALUES ('"+title+"','"+description+"',1,'"+code+"','"+deadline+"',10);");
+												  " VALUES ('"+title+"','"+description+"',1,'"+code+"','"+deadline+"',10);");
+					if (statement != null) { statement.close();}
 					} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}			        				
-	}	
+							        				
+					}
+	}
 	
 	
 	
@@ -319,7 +344,6 @@ public class UtilityMethods {
 				statement.executeQuery("UPDATE Auctions SET ActualPrice_auc'"+bid.getPrice()+"' WHERE idAuction='"+bid.getAuct_id()+"'");
 				statement.executeQuery("INSERT INTO Bid VALUES ("+bid.getCliente_id()+","+bid.getAuct_id()+","+bid.getPrice());//search query by the id of the user
 				System.out.println("type: bid, ok:true");
-				Cliente client;
 				notifyBestOffer(bid);
 			}else{
 				System.out.println("type: bid, ok:false.");
@@ -327,7 +351,9 @@ public class UtilityMethods {
 		}catch (SQLException e) {
 			System.out.println("type: bid, ok:false.");
 			e.printStackTrace();
-		}
+		}finally {
+	        if (statement != null) { statement.close(); }
+	    }
 	}
 	//////////////////////////////////////////////////////////////////////////
 	// TASK 6 (By: Guido): message
@@ -341,13 +367,13 @@ public class UtilityMethods {
 		if(result.getString("Username").equals(""))
 		{
 			statement.executeQuery("INSERT INTO Messages (Text_msg,Status,User_sender,User_reciver)"+
-								   "VALUES ('"+msg.getText()+"',0,"+senderID+","+reciverID+");");
+								   " VALUES ('"+msg.getText()+"',0,"+senderID+","+reciverID+");");
 		}
 		System.out.println("Type: message, id");
 	}
 	
 	//i have to finish this
-	public static void checkAuctionTermination() throws ParseException
+	public void checkAuctionTermination() throws ParseException
 	{
 		try {
 			statement=connection.createStatement();
@@ -374,6 +400,8 @@ public class UtilityMethods {
 		    	   					statement.execute("UPDATE Auctions"+
 	    	   									  	  "SET  Auctions.Status=1"+
 	    	   									  	  "WHERE Auctions.idAuction="+idAuc+";");
+		    	   				}else{
+		    	   					System.out.println("Your auction are not expiried");
 		    	   				}
 		    	   		}
 		    	   	}
@@ -386,12 +414,14 @@ public class UtilityMethods {
 		catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}finally {
+	        if (statement != null) { statement.close(); }
+	    }
 	}
 	
 	
 	//notifyBestOffert
-	public static void notifyBestOffer(Bid bid)
+	public void notifyBestOffer(Bid bid)
 	{
 			//We have to do a select for let the other users know that the best offert were made from another client
 			
@@ -423,7 +453,9 @@ public class UtilityMethods {
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}finally {
+		        if (statement != null) { statement.close(); }
+		    }
 	}
 	//showMessages has to be periodically called by the client
 	public void showMessages() throws SQLException{
@@ -432,13 +464,13 @@ public class UtilityMethods {
 		   statement=connection.createStatement();
 	       result=statement.executeQuery("SELECT Messages.Text,Messages.idMessage,Messages.User_sender"+
 	    		   						 "FROM Messages"+
-	    		   						 "WHERE Status=0 and Username='"+cliente.getId+"';");//statements which selects all users with status==1
+	    		   						 "WHERE Status=0 and Username='"+cliente.getClientId()+"';");//statements which selects all users with status==1
 	       
 	       
-	       if(result.getString("User_sender").equals("")){
+	       if(result.getString("User_sender")!=null){
 	    	   System.out.println("You don't have notifications");
 	       }else{
-	    	   	int[] idArray;
+	    	    ArrayList idArray = new ArrayList<Integer>();//inizzializzare un array
 	    	   	String response="type: message, ";
 	    	   	//statements which selects all users with status==1
 	    	   	meta1=result.getMetaData();	
@@ -447,22 +479,23 @@ public class UtilityMethods {
 	    	   	while(result.next()){	//print all che table results, we have to display only what we need	
 	    	   		for	(int	i=1;i<=numberOfColumns;	i++)	{	
 	    	   			response+="id:"+result.getString("idMessage")+", ";
-	    	   			idArray[i-1]=Integer.parseInt(result.getString("idMessage"));
+	    	   			idArray.add(new Integer(Integer.parseInt(result.getString("idMessage"))));
 	    	   			response+="text: "+result.getString("Test_msg");
 	    	   			response+="\n";
 	    	   		}
 	    	   	}
-	    	   	for(int i=0;i<idArray.length;i++){
+	    	   	for(int i=0;i<idArray.size();i++){
 	    	   			   statement.executeQuery("UPDATE Messages"+
 	    	   									  "SET Messages.Status=1"+
-	    	   									  "WHERE Messages.idMessage="+idArray[i]+";");
+	    	   									  "WHERE Messages.idMessage="+idArray.get(i-1)+";");
 	    	   	}
 	    	   	System.out.println(response);	
 	       }	
 	}
+	
 	//////////////////////////////////////////////////////////////////////////
 	// TASK 7 (By: Guido): detail_auction
-	public static void online_users() throws SQLException
+	public void onlineUsers() throws SQLException
 	{	  
 			statement=connection.createStatement();  
 			result=statement.executeQuery("SELECT COUNT(1) AS RowNumber	FROM Users WHERE Status=1");
@@ -484,22 +517,17 @@ public class UtilityMethods {
 			}catch (NumberFormatException | SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}finally {
+		        if (statement != null) { statement.close(); }
+		    }
 			
-			
-		//	}catch{
-				
-		//	}finally{
-				
-		//	}
-			}
+		}
+
 	
-    //////////////////////////////////////////////////////////////////////////
-    // TASK 0b (By Guido)
-    public static void login(){
-    	Cliente client=new Cliente();
-    	// 1: ASK FOR USERNAME AND PASSWORD (COMPLETE!)
-    	int registered = 0; // this value will be 1 when login success
+	
+	public void registry(){ //(COMPLETE / TESTED OK)
+    	
+    	int ok = 0; // false (ok = 1 when true)
         Scanner in = new Scanner(System.in);
         String username = "";
         String password = "";
@@ -508,82 +536,172 @@ public class UtilityMethods {
         System.out.print("password: ");
         password = in.next();
         
-        // 2: CHECK IF USER EXISTS ON TABLE "users"
-        // need check on database if pair user and pass exists
-        // and put the value of registered to 1
+        // if account created need print "ok: true"
         
-        // 3: GIVE ACESS TO THIS USER
-        // if user get success on login will call this function: login_types()
-        //if (registered == 1){ 
-        	login_types(client);
-        //}else{
-        	//System.out.println("error");
-        	//get_access();
-        //}
-        
+        try {
+        		// Execute SQL query 			
+     			result = statement.executeQuery("select * from users");
+     			
+     			// Process the result set
+     			while (result.next()) {
+     				
+     				String user = result.getString("Username"); //get the user from table users
+     				String pass = result.getString("Password"); //get the pass from table users
+     				
+     				int s1 = 0;
+     				int s2 = 0;
+     				
+     				// in case of registry the program must check if the user
+     				// already exists 
+     				// dont need compare the password
+     				if(user.equals(username)){
+     					//s1 = 1;
+     					ok = 1;
+     				}
+     			}
+     			if (ok==1){
+     				// the username already is in use
+ 					System.out.println("type: login, ok: false");
+ 					get_access();
+ 				}
+ 				else{
+ 					// the username is free
+ 					System.out.println("type: login, ok: true");
+ 					
+ 					// insert user and pass in database
+ 					String sql = "INSERT INTO users"
+ 							   + "(Username, Password)"
+ 							    + "VALUES ('" +username+ "','" +password +"')";
+ 					Statement statement = connection.createStatement();
+ 					statement.executeUpdate(sql);
+ 					get_access();
+
+ 				}
+     		
+     			}
+     			catch (Exception exc) {
+     				exc.printStackTrace();
+     			}
+ 
+    }
+
+	
+    //////////////////////////////////////////////////////////////////////////
+    // TASK 0b (By Guido)
+    public void login(){ //login has to be done yet
+    	 	System.out.println("type: login, ");
+    	 	System.out.println(" username: ");
+    	 	String usr=scanner.next();
+    	 	System.out.println(", password: ");
+    	 	String pws=scanner.next();
+
+    	 
+    	 	try {
+
+    	 		 String query="SELECT *  FROM users  WHERE Password='"+pws+"' and Username='"+usr+"';";
+    	 		 
+    	 		 statement=connection.createStatement();
+    	 		 result=statement.executeQuery(query);
+
+    	 		 
+    	 		 if(result.next()){
+    	 			 	this.cliente.setClientId(result.getInt("idUser"));
+    	 			 	this.cliente.setClientUsername(result.getString("Username"));
+    	 			 	this.cliente.setClientPass(result.getString("Password"));
+
+    	 			 	System.out.println("type:login,ok:true.");
+    	 		 }else{
+    	 			 System.out.print("type:login,ok:false.");
+    	 		 }
+			} catch (SQLException e) {
+				System.out.print("type:login,ok:false.");
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}  
+    	 	
+    	 	login_types();
+        // possible first types: login or registry
     }
     
-    public static void login_types(Cliente cliente){//create an object to store variables
+    public void login_types()  {//create an object to store variables
+    	
+    	//GEt the messagess not read 
+    	/* try {
+ 			statement=connection.createStatement();
+ 			result=statement.executeQuery("SELECT * "+
+   					  					  "FROM messages,users "+
+   					  					  "WHERE messages.Status=0 and users.idUser="+cliente.getClientId()+";");
+ 		
+       //statements which selects all users with status==1
+         
+         
+         if(result.getString("Users_sender")==null){
+         	System.out.println("You don't have notifications");
+         }else{
+         	ArrayList<Integer> idArray=new ArrayList<>();
+         	String response="type: notification_message, ";
+ 			//statements which selects all users with status==1
+         	meta1=result.getMetaData();	
+ 		    int numberOfColumns=meta1.getColumnCount();
+         		//it always works even if we have one column
+         		while(result.next()){	//print all che table results, we have to display only what we need	
+         			for	(int	i=1;i<=numberOfColumns;	i++)	{	
+         				response+="id:"+result.getInt("idMessage")+", ";
+         				idArray.add(new Integer(result.getInt("idMessage")));
+         				response+="user: "+result.getString("idUser")+", ";
+         				response+="text: "+result.getString("Test_msg");
+         				response+="\n";
+         			}
+         		}
+         		for(int i=0;i<idArray.size();i++){
+         			result=statement.executeQuery("UPDATE Messages"+
+         									 	  "SET Messages.Status=1"+
+         									 	  "WHERE Messages.idMessage="+idArray.get(i)+";");
+         		}
+         		System.out.println(response);
+         }
+        }catch (SQLException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
+ 		}*/
+    	 
+    	 
+    	 
     	Scanner in = new Scanner(System.in);
-
     	System.out.println("POSSIBLE TYPES: create_auction, search_auction, detail_auction, my_auctions, bid, message, online_users");
     	String type = "";
     	System.out.print("type: ");
         type = in.next();
         
         /*notification for messages*/
-        statement=connection.createStatement();
-        result=statement.executeQuery("SELECT Messages.Text,Messages.idMessage,Messages.User_sender"+
-				  					  "FROM Messages"+
-				  					  "WHERE Status=0 and Username='"+cliente.getId+"';");//statements which selects all users with status==1
-        
-        
-        if(result.getString("User_sender").equals("")){
-        	System.out.println("You don't have notifications");
-        }else{
-        	int[] idArray;
-        	String response="type: notification_message, ";
-			//statements which selects all users with status==1
-        	meta1=result.getMetaData();	
-		    int numberOfColumns=meta1.getColumnCount();
-        		//it always works even if we have one column
-        		while(result.next()){	//print all che table results, we have to display only what we need	
-        			for	(int	i=1;i<=numberOfColumns;	i++)	{	
-        				response+="id:"+result.getString("idMessage")+", ";
-        				idArray[i-1]=Integer.parseInt(result.getString("idMessage"));
-        				response+="user: "+result.getString("idUser")+", ";
-        				response+="text: "+result.getString("Test_msg");
-        				response+="\n";
-        			}
-        		}
-        		for(int i=0;i<idArray.length;i++){
-        			result=statement.executeQuery("UPDATE Messages"+
-        									 	  "SET Messages.Status=1"+
-        									 	  "WHERE Messages.idMessage="+idArray[i]+";");
-        		}
-        		System.out.println(response);	
-        }
+       
+       
         
         
         
         
         if(type.equals("create_auction")){
-        	//System.out.println("entrou");
-        	createAuction(cliente);
-    	}
-    	else if(type.equals("search_auction")){
+        	createAuction();
+    	}else if(type.equals("bid")){
+    		makeBid();
+    	}else if(type.equals("message")){
+    		insertMessage();
+    	}else if(type.equals("online_users")){
+    		onlineUsers();
+    	}else if(type.equals("search_auction")){
+    		System.out.print("Insert what auction do you want to search: ");
+            type = in.next();
     		searchAuction(type);
-    	}
-    	else if(type.equals("detail_auction")){
-    		
+    	}else if(type.equals("detail_auction")){
+    		detailAuction();
     	}
     	else{
-    		login_types(cliente);
+    		login_types();
     	}
 
     }
     
-    static void get_access(){
+   public void get_access(){
     	
     	Scanner in = new Scanner(System.in);
 
@@ -608,24 +726,6 @@ public class UtilityMethods {
     		get_access();
     	}
     }
-    
-	public static void db_connection() throws SQLException{
-		// this function will be used in RMI server in future
-    	
-		Scanner in = new Scanner(System.in);
-		//String bd_name = "";
-		String bd_user = "";
-		String bd_pass = "";
-		//System.out.print("BD Name: ");
-        //bd_name = in.next();
-        System.out.print("BD Username: ");
-        bd_user = in.next();
-        System.out.print("BD Password: ");
-        bd_pass = in.next();
-		connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd", bd_user , bd_pass);
-        //conexao = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd", "root" , "abc");
-		statement = connection.createStatement();	
-	}
 	
 }
     

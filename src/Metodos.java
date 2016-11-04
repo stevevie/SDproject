@@ -375,27 +375,27 @@ public class Metodos {
 	// TASK 0d) 
     public static void login_types() throws SQLException{ // (MUST BE COMPLETE)
     	// this method is to the user get menu options when he get success in login
-    	Scanner in = new Scanner(System.in);
+    Scanner in = new Scanner(System.in);
 
-    	System.out.println("POSSIBLE TYPES: create_auction, search_auction, detail_auction, my_auctions, bid, message, online_users, exit");
-    	String type = "";
-    	System.out.print("type: ");
+        System.out.println("POSSIBLE TYPES: create_auction, search_auction, detail_auction, my_auctions, bid, message, online_users, exit");
+        String type = "";
+        System.out.print("type: ");
         type = in.next();
         
         if(type.equals("create_auction")){
-        	//System.out.println("entrou");
-        	create_auction();
-    	}
-    	else if(type.equals("search_auction")){
-    		search_auction();
-    	}
-    	else if(type.equals("detail_auction")){
-    		detail_auction();
-    	}
+            //System.out.println("entrou");
+            create_auction();
+        }
+        else if(type.equals("search_auction")){
+            search_auction();
+        }
+        else if(type.equals("detail_auction")){
+            detail_auction();
+        }
         //(...)
-    	else{
-    		login_types();
-    	}
+        else{
+            login_types();
+        }  
 
     }
     

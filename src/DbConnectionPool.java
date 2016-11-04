@@ -24,11 +24,11 @@ import java.util.*;
 			Connection	newConnection	=	null;	
 			String ip	=	"localhost";	
 			String port	=	"3306";	
-			String db	=	"mydb";	
+			String db	=	"databaseproject";	
 			String	username	=	"root";	//it depends from your configurations
 			String	password	=	"root";
 			
-			newConnection	=	DriverManager.getConnection("jdbc:mysql://"+	ip+":"+	port+"/"+db,	username,	password);	
+			newConnection	=	DriverManager.getConnection("jdbc:mysql://"+ip+":"+port+"/"+db,	username,password);	
 			newConnection.setAutoCommit(false);	
 			return newConnection;	
 		}

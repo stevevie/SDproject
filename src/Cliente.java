@@ -6,7 +6,6 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.*;
 import java.io.BufferedWriter;
@@ -15,81 +14,65 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class Cliente {
-	public Cliente(){
-		
+	private int clientId;
+	private String clientPass,clientUsername;
+	
+	public Cliente(){}
+	
+	
+    public Cliente(int clientId, String clientPass, String clientUsername) {
+		super();
+		this.clientId = clientId;
+		this.clientPass = clientPass;
+		this.clientUsername = clientUsername;
 	}
-	
-	
-	////////////////////////////////////////////
-    // FILE SYSTEM METHODS
-	
-	//(1)
-    public static void registry(){
-    	
-    	// the strings "bar" and "/" area reserved
-    	// and can not be used in usernames or passwords
-    	// can not be used as words or inside the words
-    	
-        //System.out.println("entrou no metodo cadastro.");
-    	int ok = 0; // false (ok = 1 when true)
-        Scanner in = new Scanner(System.in);
-        String username = "";
-        String password = "";
-        String password2 = "";
-        System.out.print("username: ");
-        username = in.next();
-        System.out.print("password: ");
-        password = in.next();
-        
-        // if account created need print "ok: true"   
-    }
-    //(2)
-    public static void login(){
-        //System.out.println("entrou no metodo login.");
-    	int registed = 1;
-        Scanner in = new Scanner(System.in);
-        String username = "";
-        String password = "";
-        System.out.print("username: ");
-        username = in.next();
-        System.out.print("password: ");
-        password = in.next();
-        
-        
-    }
+
     
-    ////////////////////////////////////////
-    void ask_acessed_types(){
+
+	public int getClientId() {
+		return clientId;
+	}
+
+
+
+	public String getClientPass() {
+		return clientPass;
+	}
+
+
+
+	public String getClientUsername() {
+		return clientUsername;
+	}
+
+
+
+	public void setClientId(int clientId) {
+		this.clientId = clientId;
+	}
+
+
+
+	public void setClientPass(String clientPass) {
+		this.clientPass = clientPass;
+	}
+
+
+
+	public void setClientUsername(String clientUsername) {
+		this.clientUsername = clientUsername;
+	}
+
+
+
+	void ask_acessed_types(){
     	
     	System.out.println("POSSIBLE TYPES: create_auction, search_auction, detail_auction, my_auctions, bid, message, online_users");
 
     	
     }
     
-    static void get_acess(){
-    	
-    	Scanner in = new Scanner(System.in);
-
-    	System.out.println("POSSIBLE TYPES: login, registry");
-        int login = 0; // 0 not logged // 1 logged
-    	String type = "";
-    	System.out.print("type: ");
-        type = in.next();
-        
-        // possible first types: login or registry
-        
-    	if(type.equals("login")){
-    		login();
-    	}
-    	
-    	else if(type.equals("registry")){
-        	registry();
-    	}
-    	else{
-    		get_acess();
-    	}
-    }
-    
+/*
     public static void main(String[] args) {
     	
 
@@ -148,5 +131,5 @@ public class Cliente {
 		}
     	
     	get_acess();
-    }
+    }*/
 }

@@ -5,61 +5,62 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
 -- -----------------------------------------------------
--- Schema mydb
+-- Schema DatabaseProject
 -- -----------------------------------------------------
 
 -- -----------------------------------------------------
--- Schema mydb
+-- Schema DatabaseProject
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
-USE `mydb` ;
+CREATE SCHEMA IF NOT EXISTS `DatabaseProject` DEFAULT CHARACTER SET utf8 ;
+USE `DatabaseProject` ;
 
 -- -----------------------------------------------------
--- Table `mydb`.`auctions`
+-- Table `DatabaseProject`.`Auctions`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`auctions` (
-  `idAuctions` INT(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `DatabaseProject`.`Auctions` (
+  `idAuctions` INT(11) NOT NULL AUTO_INCREMENT,
   `Title` VARCHAR(45) NULL DEFAULT NULL,
-  `Description_auc` VARCHAR(45) NULL DEFAULT NULL,
-  `Status_auc` TINYINT(1) NULL DEFAULT '0',
-  `Code_auc` VARCHAR(45) NULL DEFAULT NULL,
-  `Deadline_auc` DATETIME NULL DEFAULT NULL,
-  `Price_auc` DECIMAL(10,2) NULL DEFAULT NULL,
+  `Description` VARCHAR(45) NULL DEFAULT NULL,
+  `Status` TINYINT(1) NULL DEFAULT 0,
+  `Code` VARCHAR(45) NULL DEFAULT NULL,
+  `Deadline` DATETIME NULL DEFAULT NULL,
+  `Price` DECIMAL(10,2) NULL DEFAULT NULL,
   PRIMARY KEY (`idAuctions`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`users`
+-- Table `DatabaseProject`.`Users`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`users` (
-  `idUsers` INT(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `DatabaseProject`.`Users` (
+  `idUser` INT(11) NOT NULL,
   `Username` VARCHAR(45) NULL DEFAULT NULL,
-  `status` VARCHAR(45) CHARACTER SET 'utf8' NULL DEFAULT NULL,
-  `Password` TINYINT(1) NULL DEFAULT '0',
-  PRIMARY KEY (`idUsers`))
+  `Status` TINYINT(1) NULL AUTO_INCREMENT,
+  `Password` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`idUser`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`bids`
+-- Table `DatabaseProject`.`Bids`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`bids` (
-  `Users_idUsers` INT(11) NOT NULL,
-  `Auctions_idAuctions` INT(11) NOT NULL,
-  PRIMARY KEY (`Users_idUsers`, `Auctions_idAuctions`),
-  INDEX `fk_Users_has_Auctions_Auctions1_idx` (`Auctions_idAuctions` ASC),
+CREATE TABLE IF NOT EXISTS `DatabaseProject`.`Bids` (
+  `Users_idUsers` INT(11) NOT NULL AUTO_INCREMENT,
+  `auctions_idAuctions` INT(11) NOT NULL,
+  `Bid` DECIMAL(10,2) NULL,
+  PRIMARY KEY (`Users_idUsers`, `auctions_idAuctions`),
   INDEX `fk_Users_has_Auctions_Users_idx` (`Users_idUsers` ASC),
-  CONSTRAINT `fk_Users_has_Auctions_Auctions1`
-    FOREIGN KEY (`Auctions_idAuctions`)
-    REFERENCES `mydb`.`auctions` (`idAuctions`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+  INDEX `fk_bids_auctions1_idx` (`auctions_idAuctions` ASC),
   CONSTRAINT `fk_Users_has_Auctions_Users`
     FOREIGN KEY (`Users_idUsers`)
-    REFERENCES `mydb`.`users` (`idUsers`)
+    REFERENCES `DatabaseProject`.`Users` (`idUser`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_bids_auctions1`
+    FOREIGN KEY (`auctions_idAuctions`)
+    REFERENCES `DatabaseProject`.`Auctions` (`idAuctions`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -67,25 +68,25 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`messages`
+-- Table `DatabaseProject`.`Messages`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`messages` (
+CREATE TABLE IF NOT EXISTS `DatabaseProject`.`Messages` (
   `idMessages` INT(11) NOT NULL AUTO_INCREMENT,
-  `text_msg` VARCHAR(200) NULL DEFAULT NULL,
+  `Text` VARCHAR(200) NULL DEFAULT NULL,
   `Status` TINYINT(1) NULL DEFAULT '0',
   `Users_sender` INT(11) NOT NULL,
-  `Users_reciver` INT(11) NOT NULL,
+  `auctions_idAuctions` INT(11) NOT NULL,
   PRIMARY KEY (`idMessages`),
   INDEX `fk_Messages_Users1_idx` (`Users_sender` ASC),
-  INDEX `fk_Messages_Users2_idx` (`Users_reciver` ASC),
+  INDEX `fk_messages_auctions1_idx` (`auctions_idAuctions` ASC),
   CONSTRAINT `fk_Messages_Users1`
     FOREIGN KEY (`Users_sender`)
-    REFERENCES `mydb`.`users` (`idUsers`)
+    REFERENCES `DatabaseProject`.`Users` (`idUser`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Messages_Users2`
-    FOREIGN KEY (`Users_reciver`)
-    REFERENCES `mydb`.`users` (`idUsers`)
+  CONSTRAINT `fk_messages_auctions1`
+    FOREIGN KEY (`auctions_idAuctions`)
+    REFERENCES `DatabaseProject`.`Auctions` (`idAuctions`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -95,3 +96,47 @@ DEFAULT CHARACTER SET = utf8;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+-- -----------------------------------------------------
+-- Data for table `DatabaseProject`.`Auctions`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `DatabaseProject`;
+INSERT INTO `DatabaseProject`.`Auctions` (`idAuctions`, `Title`, `Description`, `Status`, `Code`, `Deadline`, `Price`) VALUES (, 'titolo0', 'sdadas', 0, '123123123123', '2016-10-22 12:45:34.243', 10);
+INSERT INTO `DatabaseProject`.`Auctions` (`idAuctions`, `Title`, `Description`, `Status`, `Code`, `Deadline`, `Price`) VALUES (, 'titolo1', 'asdwda', 1, '234234234234', '2016-11-22 12:45:34.243', 2);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `DatabaseProject`.`Users`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `DatabaseProject`;
+INSERT INTO `DatabaseProject`.`Users` (`idUser`, `Username`, `Status`, `Password`) VALUES (, 'user0', 0, 'user0');
+INSERT INTO `DatabaseProject`.`Users` (`idUser`, `Username`, `Status`, `Password`) VALUES (, 'user1', 0, 'user1');
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `DatabaseProject`.`Bids`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `DatabaseProject`;
+INSERT INTO `DatabaseProject`.`Bids` (`Users_idUsers`, `auctions_idAuctions`, `Bid`) VALUES (0, 1, 10);
+INSERT INTO `DatabaseProject`.`Bids` (`Users_idUsers`, `auctions_idAuctions`, `Bid`) VALUES (1, 0, 2);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `DatabaseProject`.`Messages`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `DatabaseProject`;
+INSERT INTO `DatabaseProject`.`Messages` (`idMessages`, `Text`, `Status`, `Users_sender`, `auctions_idAuctions`) VALUES (, 'Ciao a tutti', 0, user1, 0);
+INSERT INTO `DatabaseProject`.`Messages` (`idMessages`, `Text`, `Status`, `Users_sender`, `auctions_idAuctions`) VALUES (, 'Helloooooooooooo', 0, user0, 1);
+
+COMMIT;
+
